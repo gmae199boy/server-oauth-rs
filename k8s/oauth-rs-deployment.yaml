@@ -5,6 +5,7 @@ metadata:
   namespace: oauth
   labels:
     app: oauth
+    app: server
 spec:
   selector:
     matchLabels:
