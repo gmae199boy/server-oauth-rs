@@ -14,6 +14,8 @@ serde_derive = "*"
 serde_urlencoded = "*"
 dotenv = "*"
 reqwest = { version = "*", features = ["json"] }
+tracing-subscriber = "*"
+tracing = "*"
 
 [profile.release]
 lto = true

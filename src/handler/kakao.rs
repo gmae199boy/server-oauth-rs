@@ -1,5 +1,6 @@
 use axum::{response::{IntoResponse, Redirect}, Json, http::StatusCode, extract::Query};
 use serde_derive::{Serialize, Deserialize};
+use tracing::info;
 
 #[derive(Deserialize, Serialize)]
 pub struct KakaoOauth {
@@ -23,6 +24,7 @@ pub struct KakaoBody {
 }
 
 pub async fn login() -> impl IntoResponse {
+    info!("{:?}", std::env::var("KAKAO_REDIRECT_URL").expect("no redirect url"));
     Redirect::permanent(
         &format!(
             "https://kauth.kakao.com/oauth/authorize?client_id={}&redirect_uri={}&response_type=code", 
@@ -42,6 +44,8 @@ pub async fn kakao_redirect(query: Option<Query<Querys>>) -> impl IntoResponse {
         code: query.code,
         redirect_uri: std::env::var("KAKAO_REDIRECT_URL").expect("no redirect url"),
     }).expect("serialize fail");
+
+    info!("{:?}", body);
 
     let client = reqwest::Client::new();
     let res: KakaoOauth = client.post("https://kauth.kakao.com/oauth/token")
