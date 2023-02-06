@@ -44,26 +44,29 @@ pub async fn kakao_redirect(query: Option<Query<Querys>>) -> impl IntoResponse {
         redirect_uri: std::env::var("KAKAO_REDIRECT_URL").expect("no redirect url"),
     }).expect("serialize fail");
 
-    let res = reqwest::Client::builder()
-        .danger_accept_invalid_certs(true)
-        .build()
-        .unwrap()
-        .post("https://kauth.kakao.com/oauth/token")
-        .header("Content-type", "application/x-www-form-urlencoded")
-        .body(body)
-        .send()
-        .await
-        .unwrap()
-        .json::<KakaoOauth>()
-        .await
-        .unwrap();
-
-    // let client = reqwest::Client::new();
-    // let res: KakaoOauth = client.post("https://kauth.kakao.com/oauth/token")
+    // TODO: POST시 self signed certificate in certificate chain 에러
+    // openssl, curl 등 자체 인증서 통신에 대한 조사 필요
+    // ! danger_accept_invalid_certs 은 위험할 수 있음
+    // let res = reqwest::Client::builder()
+    //     .danger_accept_invalid_certs(true)
+    //     .build()
+    //     .unwrap()
+    //     .post("https://kauth.kakao.com/oauth/token")
     //     .header("Content-type", "application/x-www-form-urlencoded")
     //     .body(body)
     //     .send()
-    //     .await.unwrap().json().await.unwrap();
+    //     .await
+    //     .unwrap()
+    //     .json::<KakaoOauth>()
+    //     .await
+    //     .unwrap();
+    info!("enter");
+    let client = reqwest::Client::new();
+    let res: KakaoOauth = client.post("https://kauth.kakao.com/oauth/token")
+        .header("Content-type", "application/x-www-form-urlencoded")
+        .body(body)
+        .send()
+        .await.unwrap().json().await.unwrap();
 
     (StatusCode::OK, Json(res))
 }

@@ -22,4 +22,4 @@ jobs:
         uses: docker/build-push-action@v3
         with:
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/oauth-rs:0.0.2
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/oauth-rs:0.0.3

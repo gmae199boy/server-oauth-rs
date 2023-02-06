@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: oauth-rs
-          image: gmae199boy/oauth-rs:0.0.2
+          image: gmae199boy/oauth-rs:0.0.3
           ports:
             - containerPort: 3000
               name: oauth-port

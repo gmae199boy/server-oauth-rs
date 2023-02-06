@@ -1,4 +1,4 @@
-FROM clux/muslrust:stable AS builder
+FROM rust:1.66.1 AS builder
 
 WORKDIR /usr/src/project
 
@@ -14,12 +14,13 @@ COPY --chown=rust:rust src src
 # RUN rm src/*.rs
 
 RUN cargo build --release 
+RUN strip -s ./target/release/server-oauth-rs
 # --target x86_64-unknown-linux-musl
 
 # FROM gcr.io/distroless/static:nonroot
-FROM scratch
+FROM gcr.io/distroless/cc
 
-COPY --from=builder /usr/src/project/target/x86_64-unknown-linux-musl/release/server-oauth-rs .
+COPY --from=builder /usr/src/project/target/release/server-oauth-rs .
 
 EXPOSE 3000
 
