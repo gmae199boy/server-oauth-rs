@@ -24,7 +24,6 @@ pub struct KakaoBody {
 }
 
 pub async fn login() -> impl IntoResponse {
-    info!("{:?}", std::env::var("KAKAO_REDIRECT_URL").expect("no redirect url"));
     Redirect::permanent(
         &format!(
             "https://kauth.kakao.com/oauth/authorize?client_id={}&redirect_uri={}&response_type=code", 
@@ -45,23 +44,26 @@ pub async fn kakao_redirect(query: Option<Query<Querys>>) -> impl IntoResponse {
         redirect_uri: std::env::var("KAKAO_REDIRECT_URL").expect("no redirect url"),
     }).expect("serialize fail");
 
-    info!("{:?}", body);
-    // let res = reqwest::Client::builder()
-    //         .danger_accept_invalid_certs(true)
-    //         .build()
-    //         .unwrap()
-    //         .post("https://kauth.kakao.com/oauth/token")
-    //         .header("Content-type", "application/x-www-form-urlencoded")
-    //         .body(body)
-    //         .send()
-    //         .await.unwrap().json().await.unwrap();
-
-    let client = reqwest::Client::new();
-    let res: KakaoOauth = client.post("https://kauth.kakao.com/oauth/token")
+    let res = reqwest::Client::builder()
+        .danger_accept_invalid_certs(true)
+        .build()
+        .unwrap()
+        .post("https://kauth.kakao.com/oauth/token")
         .header("Content-type", "application/x-www-form-urlencoded")
         .body(body)
         .send()
-        .await.unwrap().json().await.unwrap();
+        .await
+        .unwrap()
+        .json::<KakaoOauth>()
+        .await
+        .unwrap();
+
+    // let client = reqwest::Client::new();
+    // let res: KakaoOauth = client.post("https://kauth.kakao.com/oauth/token")
+    //     .header("Content-type", "application/x-www-form-urlencoded")
+    //     .body(body)
+    //     .send()
+    //     .await.unwrap().json().await.unwrap();
 
     (StatusCode::OK, Json(res))
 }
