@@ -46,6 +46,15 @@ pub async fn kakao_redirect(query: Option<Query<Querys>>) -> impl IntoResponse {
     }).expect("serialize fail");
 
     info!("{:?}", body);
+    // let res = reqwest::Client::builder()
+    //         .danger_accept_invalid_certs(true)
+    //         .build()
+    //         .unwrap()
+    //         .post("https://kauth.kakao.com/oauth/token")
+    //         .header("Content-type", "application/x-www-form-urlencoded")
+    //         .body(body)
+    //         .send()
+    //         .await.unwrap().json().await.unwrap();
 
     let client = reqwest::Client::new();
     let res: KakaoOauth = client.post("https://kauth.kakao.com/oauth/token")
