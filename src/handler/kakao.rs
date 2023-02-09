@@ -1,4 +1,12 @@
-use axum::{response::{IntoResponse, Redirect}, Json, http::StatusCode, extract::Query};
+use axum::{
+    response::{IntoResponse, Redirect}, 
+    Json, 
+    http::{
+        StatusCode,
+        header::{AUTHORIZATION, HeaderMap}
+    }, 
+    extract::Query
+};
 use serde_derive::{Serialize, Deserialize};
 
 #[derive(Deserialize, Serialize)]
@@ -32,7 +40,7 @@ pub async fn login() -> impl IntoResponse {
     )
 }
 
-pub async fn kakao_redirect(query: Option<Query<Querys>>) -> impl IntoResponse {
+pub async fn redirect(query: Option<Query<Querys>>) -> impl IntoResponse {
     let Query(query) = query.unwrap();
     let client_id = std::env::var("KAKAO_API_KEY").expect("no kakao api key");
 
@@ -47,6 +55,38 @@ pub async fn kakao_redirect(query: Option<Query<Querys>>) -> impl IntoResponse {
     let res: KakaoOauth = client.post("https://kauth.kakao.com/oauth/token")
         .header("Content-type", "application/x-www-form-urlencoded")
         .body(body)
+        .send()
+        .await.unwrap().json().await.unwrap();
+
+    (StatusCode::OK, Json(res))
+}
+
+pub async fn logout(headers: HeaderMap) -> impl IntoResponse {
+    let client = reqwest::Client::new();
+    let res: KakaoOauth = client.post("https://kapi.kakao.com/v1/user/logout")
+        .header("Content-type", "application/x-www-form-urlencoded")
+        .header("Authorization", headers.get(AUTHORIZATION).expect("not exist Bearer Token"))
+        .send()
+        .await.unwrap().json().await.unwrap();
+
+    (StatusCode::OK, Json(res))
+}
+
+pub async fn unlink_app(headers: HeaderMap) -> impl IntoResponse {
+    let client = reqwest::Client::new();
+    let res: KakaoOauth = client.post("https://kapi.kakao.com/v1/user/unlink")
+        .header("Content-type", "application/x-www-form-urlencoded")
+        .header("Authorization", headers.get(AUTHORIZATION).expect("not exist Bearer Token"))
+        .send()
+        .await.unwrap().json().await.unwrap();
+
+    (StatusCode::OK, Json(res))
+}
+
+pub async fn token_info(headers: HeaderMap) -> impl IntoResponse {
+    let client = reqwest::Client::new();
+    let res: KakaoOauth = client.get("https://kapi.kakao.com/v1/user/access_token_info")
+        .header("Authorization", headers.get(AUTHORIZATION).expect("not exist Bearer Token"))
         .send()
         .await.unwrap().json().await.unwrap();
 
