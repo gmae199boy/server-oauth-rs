@@ -22,8 +22,7 @@ async fn main() {
     .route("/kakao/login", get(handler::kakao::login))
     .route("/kakao/redirect", get(handler::kakao::redirect))
     .route("/kakao/logout", post(handler::kakao::logout))
-    .route("/kakao/unlink", post(handler::kakao::unlink_app))
-    .route("/kakao/tokenInfo", post(handler::kakao::token_info));
+    .route("/kakao/unlink", post(handler::kakao::unlink_app));
 
     let addr = SocketAddr::from(([0, 0, 0, 0], 3000));
 

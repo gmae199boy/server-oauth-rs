@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: oauth-rs
-          image: gmae199boy/oauth-rs:0.0.4
+          image: gmae199boy/oauth-rs:0.0.5
           ports:
             - containerPort: 3000
               name: oauth-port
@@ -31,3 +31,8 @@ spec:
                 secretKeyRef:
                   name: oauth
                   key: KAKAO_REDIRECT_URL
+            - name: KAKAO_ADMIN_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: oauth
+                  key: KAKAO_ADMIN_KEY

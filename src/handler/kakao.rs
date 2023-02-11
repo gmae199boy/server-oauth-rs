@@ -1,10 +1,7 @@
 use axum::{
     response::{IntoResponse, Redirect}, 
     Json, 
-    http::{
-        StatusCode,
-        header::{AUTHORIZATION, HeaderMap}
-    }, 
+    http::{StatusCode},
     extract::Query
 };
 use serde_derive::{Serialize, Deserialize};
@@ -28,6 +25,17 @@ pub struct KakaoBody {
     pub client_id: String,
     pub code: String,
     pub redirect_uri: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct UserId {
+    pub user_id: String,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct UserBody {
+    pub target_id_type: String,
+    pub target_id: String,
 }
 
 pub async fn login() -> impl IntoResponse {
@@ -61,32 +69,41 @@ pub async fn redirect(query: Option<Query<Querys>>) -> impl IntoResponse {
     (StatusCode::OK, Json(res))
 }
 
-pub async fn logout(headers: HeaderMap) -> impl IntoResponse {
+
+/*
+    이하 서버에서 강제로 실행시키기 위한 API
+    평소엔 클라이언트에서 직접 KAKAO API를 사용하지만
+    admin api를 사용할 일이 있을 경우 사용
+*/ 
+
+pub async fn logout(Json(payload):Json<UserId>) -> impl IntoResponse {
+    let body = serde_urlencoded::to_string(&UserBody{
+        target_id_type: String::from("user_id"),
+        target_id: payload.user_id,
+    }).expect("serialize fail");
+
     let client = reqwest::Client::new();
     let res: KakaoOauth = client.post("https://kapi.kakao.com/v1/user/logout")
         .header("Content-type", "application/x-www-form-urlencoded")
-        .header("Authorization", headers.get(AUTHORIZATION).expect("not exist Bearer Token"))
+        .header("Authorization", format!("KakaoAK {}", std::env::var("KAKAO_ADMIN_KEY").expect("not exist admin key")))
+        .body(body)
         .send()
         .await.unwrap().json().await.unwrap();
 
     (StatusCode::OK, Json(res))
 }
 
-pub async fn unlink_app(headers: HeaderMap) -> impl IntoResponse {
+pub async fn unlink_app(Json(payload):Json<UserId>) -> impl IntoResponse {
+    let body = serde_urlencoded::to_string(&UserBody{
+        target_id_type: String::from("user_id"),
+        target_id: payload.user_id,
+    }).expect("serialize fail");
+
     let client = reqwest::Client::new();
     let res: KakaoOauth = client.post("https://kapi.kakao.com/v1/user/unlink")
         .header("Content-type", "application/x-www-form-urlencoded")
-        .header("Authorization", headers.get(AUTHORIZATION).expect("not exist Bearer Token"))
-        .send()
-        .await.unwrap().json().await.unwrap();
-
-    (StatusCode::OK, Json(res))
-}
-
-pub async fn token_info(headers: HeaderMap) -> impl IntoResponse {
-    let client = reqwest::Client::new();
-    let res: KakaoOauth = client.get("https://kapi.kakao.com/v1/user/access_token_info")
-        .header("Authorization", headers.get(AUTHORIZATION).expect("not exist Bearer Token"))
+        .header("Authorization", format!("KakaoAK {}", std::env::var("KAKAO_ADMIN_KEY").expect("not exist admin key")))
+        .body(body)
         .send()
         .await.unwrap().json().await.unwrap();
 
